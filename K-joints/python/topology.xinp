@@ -1,0 +1,42 @@
+  <topology>
+    <connection master="24" mface="4" slave="25" sface="3"/>
+    <connection master="23" mface="2" slave="25" sface="4"/>
+    <connection master="22" mface="4" slave="23" sface="3"/>
+    <connection master="21" mface="4" slave="22" sface="3"/>
+    <connection master="20" mface="2" slave="21" sface="2" orient="2"/>
+    <connection master="19" mface="2" slave="20" sface="1"/>
+    <connection master="17" mface="2" slave="18" sface="1"/>
+    <connection master="17" mface="1" slave="22" sface="2"/>
+    <connection master="15" mface="4" slave="16" sface="3"/>
+    <connection master="14" mface="4" slave="15" sface="3"/>
+    <connection master="13" mface="4" slave="14" sface="3"/>
+    <connection master="13" mface="3" slave="16" sface="4"/>
+    <connection master="12" mface="2" slave="25" sface="1"/>
+    <connection master="12" mface="1" slave="16" sface="2"/>
+    <connection master="11" mface="4" slave="12" sface="3"/>
+    <connection master="11" mface="2" slave="24" sface="1"/>
+    <connection master="11" mface="1" slave="15" sface="2"/>
+    <connection master="10" mface="4" slave="11" sface="3"/>
+    <connection master="10" mface="2" slave="18" sface="4"/>
+    <connection master="10" mface="1" slave="14" sface="2"/>
+    <connection master="9" mface="4" slave="10" sface="3"/>
+    <connection master="9" mface="3" slave="12" sface="4"/>
+    <connection master="9" mface="2" slave="17" sface="4"/>
+    <connection master="9" mface="1" slave="13" sface="2"/>
+    <connection master="7" mface="2" slave="8" sface="1"/>
+    <connection master="6" mface="2" slave="7" sface="1"/>
+    <connection master="5" mface="2" slave="6" sface="1"/>
+    <connection master="5" mface="1" slave="8" sface="2"/>
+    <connection master="4" mface="4" slave="20" sface="3"/>
+    <connection master="4" mface="3" slave="8" sface="4"/>
+    <connection master="3" mface="4" slave="19" sface="3"/>
+    <connection master="3" mface="3" slave="7" sface="4"/>
+    <connection master="3" mface="2" slave="4" sface="1"/>
+    <connection master="2" mface="4" slave="18" sface="3"/>
+    <connection master="2" mface="3" slave="6" sface="4"/>
+    <connection master="2" mface="2" slave="3" sface="1"/>
+    <connection master="1" mface="4" slave="17" sface="3"/>
+    <connection master="1" mface="3" slave="5" sface="4"/>
+    <connection master="1" mface="2" slave="2" sface="1"/>
+    <connection master="1" mface="1" slave="4" sface="2"/>
+  </topology>
