@@ -1,0 +1,74 @@
+from splipy import *
+from splipy.io import G2, STL
+import splipy.curve_factory as cf
+import splipy.surface_factory as sf
+import splipy.volume_factory as vf
+import numpy as np
+import re
+import click
+
+ 
+@click.command()
+@click.option('--h',                     default=.02,      help='Element size in all directions')
+@click.option('--p',                     default=3,        help='The polynomial degree')
+@click.option('--layers',                default=7,        help='number of printable layers')
+@click.option('--layer-height',          default=.02,      help='layer height [m]')
+@click.option('--print-width',           default=.02,      help='print width [m]')
+@click.option('--print-length',          default=1.8,      help='print length = 2pi*radius [m]')
+@click.option('--filename',              default='out.g2', help='Output GoTools (g2) filename')
+@click.option('--stl',                   is_flag=True,     help='Create a stl output file')
+
+def cylinder(h, p, layers, layer_height, print_width, print_length, filename, stl):
+    """ Creates a cylinder wall piece """
+    nx = print_length / h # total number of length elements
+    ny = print_width  / h # total number of width elements
+    nz = layer_height / h # number of height elements per layer
+
+    assert abs(nz-round(nz)) < 1e-10, 'Element size (h) does not divide layer-height'
+    # nz *= layers          # total number of height elements
+    nx = round(nx)
+    ny = round(ny)
+    nz = round(nz)
+
+    radius = print_length / 2 / np.pi
+    height = layer_height * layers
+
+    # gives a B-spline approximation to the helix with arclength parametrization
+    # unlike curve_factory.circle which is exact, but not arclength
+    def arclength_circle(t):
+        return np.array( [radius * np.cos(t), radius * np.sin(t), t/2/np.pi*layer_height] ).T
+    helix = cf.fit(arclength_circle, 0, 2*np.pi)
+    helix = helix.rebuild(p=p+1, n=nx+p+1)
+    # helix.raise_order(p+1 - helix.order())
+
+    model = []
+    for l in range(layers):
+        inner = sf.sweep(helix, cf.line([0          ,0], [0          ,layer_height]))
+        outer = sf.sweep(helix, cf.line([print_width,0], [print_width,layer_height]))
+        one_layer = vf.edge_surfaces(inner, outer)
+        one_layer.swap('v', 'w')
+        one_layer.raise_order(0,p,p)
+        one_layer.refine(0,ny-1,nz-1)
+        model.append(one_layer)
+        helix += [0,0,layer_height]
+    bottom = model[0].faces()[4]
+    flat = bottom.clone().project('xy')
+    first_layer = vf.edge_surfaces(flat, bottom)
+    first_layer.raise_order(0,0,p)
+    first_layer.refine(0,0,nz-1)
+    model.append(first_layer)
+
+        
+    with G2(filename) as f:
+        f.write(model)
+    print(f'\"{filename}\" written successfully')
+
+    if stl:
+        stl_filename = re.sub(r'\..*$', '.stl', filename)
+        with STL(stl_filename, 2) as f:
+            for vol in model:
+                f.write(vol)
+        print(f'\"{stl_filename}\" written successfully')
+
+if __name__ == '__main__':
+    cylinder()
