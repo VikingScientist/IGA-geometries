@@ -15,10 +15,11 @@ import click
 @click.option('--layer-height',          default=.02,      help='layer height [m]')
 @click.option('--print-width',           default=.02,      help='print width [m]')
 @click.option('--print-length',          default=1.8,      help='print length = 2pi*radius [m]')
+@click.option('--flat-floor',            default=True,     help='Flatten the bottom layer (degenerate face on patch 0)')
 @click.option('--filename',              default='out.g2', help='Output GoTools (g2) filename')
 @click.option('--stl',                   is_flag=True,     help='Create a stl output file')
 
-def cylinder(h, p, layers, layer_height, print_width, print_length, filename, stl):
+def cylinder(h, p, layers, layer_height, print_width, print_length, flat_floor, filename, stl):
     """ Creates a cylinder wall piece """
     nx = print_length / h # total number of length elements
     ny = print_width  / h # total number of width elements
@@ -39,24 +40,30 @@ def cylinder(h, p, layers, layer_height, print_width, print_length, filename, st
         return np.array( [radius * np.cos(t), radius * np.sin(t), t/2/np.pi*layer_height] ).T
     helix = cf.fit(arclength_circle, 0, 2*np.pi)
     helix = helix.rebuild(p=p+1, n=nx+p+1)
-    # helix.raise_order(p+1 - helix.order())
 
+    crossection = sf.square(size=(print_width, layer_height), lower_left=(radius,0)).rotate(np.pi/2, (1,0,0))
+    one_layer = vf.revolve(crossection)
+    one_layer.swap('w','v')
+    one_layer.swap('u','v')
+    one_layer.reverse('v')
+    one_layer = one_layer.split( 0, 'u')
+    for i in range(9):
+        weights = one_layer[i,:,:,3]
+        one_layer[i,:,:,2] += weights * layer_height*i/8
+    one_layer = one_layer.rebuild((p+1,p+1,p+1), (nx+p, ny+p, nz+p))
     model = []
     for l in range(layers):
-        inner = sf.sweep(helix, cf.line([0          ,0], [0          ,layer_height]))
-        outer = sf.sweep(helix, cf.line([print_width,0], [print_width,layer_height]))
-        one_layer = vf.edge_surfaces(inner, outer)
-        one_layer.swap('v', 'w')
-        one_layer.raise_order(0,p,p)
-        one_layer.refine(0,ny-1,nz-1)
-        model.append(one_layer)
-        helix += [0,0,layer_height]
-    bottom = model[0].faces()[4]
-    flat = bottom.clone().project('xy')
-    first_layer = vf.edge_surfaces(flat, bottom)
-    first_layer.raise_order(0,0,p)
-    first_layer.refine(0,0,nz-1)
-    model.append(first_layer)
+        model.append(one_layer + [0,0,l * layer_height])
+
+    
+    if flat_floor:
+        for vol in model: vol -= [0,0,layer_height]
+        bottom = model[1].faces()[4]
+        flat = bottom.clone().project('xy')
+        first_layer = vf.edge_surfaces(flat, bottom)
+        first_layer.raise_order(0,0,p-1)
+        first_layer.refine(0,0,nz-1)
+        model[0] = first_layer
 
         
     with G2(filename) as f:
