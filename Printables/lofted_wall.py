@@ -55,7 +55,7 @@ def lofted_wall(h, p, layers, layer_height, print_width, print_length, horizonta
     print(f'\"{filename}\" written successfully')
 
     if stl:
-        stl_filename = re.sub('\..*$', '.stl', filename)
+        stl_filename = re.sub(r'\..*$', '.stl', filename)
         with STL(stl_filename, 2) as f:
             f.write(model)
         print(f'\"{stl_filename}\" written successfully')

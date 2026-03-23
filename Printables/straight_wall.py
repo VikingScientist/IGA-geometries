@@ -39,7 +39,7 @@ def straight_wall(h, p, layers, layer_height, print_width, print_length, filenam
     print(f'\"{filename}\" written successfully')
 
     if stl:
-        stl_filename = re.sub('\..*$', '.stl', filename)
+        stl_filename = re.sub(r'\..*$', '.stl', filename)
         with STL(stl_filename) as f:
             f.write(model)
         print(f'\"{stl_filename}\" written successfully')
